@@ -1,8 +1,11 @@
 import machine
+import time
+import utime
 """
 滑动平均并校准：https://www.mfitzp.com/tutorials/3-axis-gyro-micropython/
 3D透视：https://www.mfitzp.com/invent/gyroscopic-wireframe-cube/
 """
+
 
 class Accel():
     def __init__(self, i2c, addr=0x68):
@@ -11,6 +14,7 @@ class Accel():
         self.iic.start()
         self.iic.writeto(self.addr, bytearray([107, 0]))
         self.iic.stop()
+        self.file_path = 'mpu6050.txt'
 
     def get_raw_values(self):
         self.iic.start()
@@ -93,12 +97,29 @@ class Accel():
         self.cal_z = value['AcZ']
         self.cal_y = value['AcY']
         print("calibrate_value:", value)
-        while 1:
-            data = self.get_smoothed_values()
-            print(data['AcZ']-self.cal_z,
-                  data['AcY']-self.cal_y)
+        data_list = []        
+        for i in range(1000):
             
-            sleep(0.05)
+            data = self.get_smoothed_values()
+            
+            data_list.append(data)
+#             sleep(0.05)
+            if i % 1 == 0 and i > 0:
+                for data in data_list:
+                    st = utime.ticks_ms()
+                    self.save2local(data['AcZ'])
+                    print(i,
+                          "time:", (utime.ticks_ms()-st)/1000.0,                  
+                          data['AcZ']-self.cal_z,
+                          data['AcY']-self.cal_y)                        
+                del data_list
+                data_list = []
+            
+    def save2local(self, data):
+#         if type(string) is not str:
+#             string = str(string)
+        with open(self.file_path, 'a+') as file:
+            file.write('%s\n'%(data))
 
 
 def main():
