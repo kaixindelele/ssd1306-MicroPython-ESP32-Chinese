@@ -33,7 +33,7 @@ class Accel():
     def get_values(self):
         raw_ints = self.get_raw_values()
         vals = {}
-        vals["AcX"] = self.bytes_toint(raw_ints[0], raw_ints[1])
+#         vals["AcX"] = self.bytes_toint(raw_ints[0], raw_ints[1])
         vals["AcY"] = self.bytes_toint(raw_ints[2], raw_ints[3])
         vals["AcZ"] = self.bytes_toint(raw_ints[4], raw_ints[5])
 #         vals["Tmp"] = self.bytes_toint(raw_ints[6], raw_ints[7]) / 340.00 + 36.53
@@ -57,11 +57,47 @@ class Accel():
                 result[k] = result.get(k, 0) + (data[k] / n_samples)
 
         return result
+    
+    def get_average(self, data_list):
+        pass
+    
+    def get_accel(self, n_samples=10, calibration=None):
+        # Setup a dict of measure at 0
+        result = {}
+        for _ in range(n_samples):
+            v = self.get_values()
+
+            for m in v.keys():
+                # Add on value / n_samples (to generate an average)
+                result[m] = result.get(m, 0) + v[m] / n_samples
+
+        if calibration:
+            # Remove calibration adjustment
+            for m in calibration.keys():
+                result[m] -= calibration[m]
+
+        return result
+    
+    def calibrate(self, threshold=50):
+        print('Calibrating...', end='')
+        while True:
+            v1 = self.get_accel(100)
+            v2 = self.get_accel(100)
+            if all(abs(v1[m] - v2[m]) < threshold for m in v1.keys()):
+                print('Done.')
+                return v1
 
     def val_test(self):  # ONLY FOR TESTING! Also, fast reading sometimes crashes IIC
         from time import sleep
+        value = self.calibrate()
+        self.cal_z = value['AcZ']
+        self.cal_y = value['AcY']
+        print("calibrate_value:", value)
         while 1:
-            print(self.get_smoothed_values())
+            data = self.get_smoothed_values()
+            print(data['AcZ']-self.cal_z,
+                  data['AcY']-self.cal_y)
+            
             sleep(0.05)
 
 
@@ -70,9 +106,8 @@ def main():
     i2c = I2C(scl=Pin(17), sda=Pin(16))
     accel = Accel(i2c)
     accel.val_test()
-#     accel_dict = accel.get_values()
-#     print(accel_dict)
     
     
 if __name__=="__main__":
     main()
+
