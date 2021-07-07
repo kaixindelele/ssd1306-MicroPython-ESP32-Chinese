@@ -40,7 +40,7 @@ class EmailHandler(object):
                    
           
     def send_error_to_myqq(self,
-                           to='myqqnum',
+                           to='myanotherqqnum',
                            subject="Code Error!",
                            content='Cube is out of bound'):
         self.send_mail(to=to, 
