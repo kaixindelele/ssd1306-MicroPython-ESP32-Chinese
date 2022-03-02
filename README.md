@@ -1,6 +1,11 @@
 # ssd1306OLED显示屏-MicroPython-ESP32-中文显示-利用GB2312字库（非手动取模）
 
 ## 前言：
+
+！！！没有刷固件，是没有load_font()函数的！！！
+！！！没有刷固件，是没有load_font()函数的！！！
+！！！没有刷固件，是没有load_font()函数的！！！
+
 阿这，为了让这个十几块的OLED显示中文，我可真的是付出了太多。
 百度搜不到一个靠谱的教程，昨天晚上搜了一谷歌，终于找到了一个大佬17年的博客，[uPyCraft IDE-micropython支持中文啦！](https://mc.dfrobot.com.cn/thread-26740-1-1.html)
 
